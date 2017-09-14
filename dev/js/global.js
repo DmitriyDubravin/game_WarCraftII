@@ -28,7 +28,6 @@ class Field {
 	}
 }
 
-
 class Unit {
 	constructor(x,y) {
 		this.x = x;
