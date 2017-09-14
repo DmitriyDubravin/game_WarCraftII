@@ -1,0 +1,80 @@
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Menu</title>
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+			html {
+				font: 20px/24px Arial, Helvetica, sans-serif;
+			}
+			body {
+				margin: 0;
+				background-color: black;
+			}
+			.wrapper {
+				display: flex;
+				flex-direction: column;
+			}
+			.holder {
+				display: flex;
+				min-height: 100vh;
+				padding: 80px 30px;
+				align-items: center;
+				justify-content: center;
+			}
+			#project-pages-menu {
+				margin: 0;
+				padding: 0;
+				list-style: none;
+			}
+			#project-pages-menu li {
+				padding: 10px 0;
+			}
+			#project-pages-menu li a {
+				display: inline-block;
+				border: 1px solid #fccd10;
+				padding: 10px 20px;
+				text-decoration: none;
+				color: #fccd10;
+				transition: all .25s;
+			}
+			#project-pages-menu li a:hover {
+				text-decoration: none;
+				color: black;
+				background-color: #fccd10;
+			}
+			.logo {
+				position: absolute;
+				top: 30px;
+				left: 30px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="wrapper">
+			<div class="holder">
+				<a class="logo" href="http://bigdropinc.com">
+					<img src="http://bigdropinc.com/wp-content/themes/bd/images/bigdrop-white.svg" alt="Bigdropinc.com" />
+				</a>
+				<ul id="project-pages-menu"></ul>
+			</div>
+		</div>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script>
+			$(function () {
+				$.ajax('pages.json').done(function(data) {
+					var pathFolder = data[0];
+					$.each(data, function(index, name) {
+						if(index !== 0) {
+							var page = $('<li><a href="' + pathFolder + '/html/' + name + '.html">' + name.replace(/[-]|[_]/g, ' ') + '</a></li>');
+							$('#project-pages-menu').append(page);
+						}
+					})
+				})
+			})
+		</script>
+	</body>
+</html>

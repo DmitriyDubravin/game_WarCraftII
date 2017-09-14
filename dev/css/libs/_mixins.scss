@@ -1,0 +1,153 @@
+// EXTEND
+
+// clearfix
+%clearfix {
+	&:after {
+		content: "";
+		display: table;
+		clear: both;
+	}
+}
+
+// hide text
+%hide-text {
+	overflow: hidden;
+	text-indent: 101%;
+	text-align: left;
+	white-space: nowrap;
+}
+
+// full width
+%full-width {
+	margin-right: -9999px;
+	margin-left: -9999px;
+	padding-right: 9999px;
+	padding-left: 9999px;
+}
+
+// reset for list
+%reset-list {
+	margin: 0;
+	padding: 0;
+	li {
+		list-style: none;
+	}
+}
+
+// clear bullets for li
+%reset-list-bullets {
+	padding-left: 0;
+	text-indent: 0;
+	&:before {
+		display: none;
+	}
+}
+
+// text ellipsis
+%ellipsis {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+// justify nav
+%nav-justify {
+	text-align: justify;
+	> * {
+		display: inline-block;
+		text-align: left;
+		vertical-align: top;
+	}
+	&:after {
+		content: "";
+		display: inline-block;
+		width: 100%;
+		vertical-align: top;
+	}
+}
+
+// icomoon icon
+%icomoon {
+	font-family: 'icomoon' !important;
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+// background image
+%bg-image-cover {
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
+	background-size: cover;
+}
+%centered {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%,-50%);
+}
+
+
+
+// MIXIN
+
+// size
+@mixin size($width, $height: $width) {
+	width: $width;
+	height: $height;
+}
+
+// circle
+@mixin circle($value) {
+	border-radius: 50%;
+	overflow: hidden;
+	width: $value;
+	height: $value;
+	text-indent: 101%;
+}
+
+// placeholder
+@mixin placeholder($color) {
+	&::-moz-placeholder {color: $color; opacity: 1;}
+	&:-ms-input-placeholder {color: $color;}
+	&::-webkit-input-placeholder {color: $color;}
+	&:-moz-placeholder {color: $color;}
+	&.placeholder {color: $color;}
+}
+
+// linear gradient
+@mixin linear-gradient($from-color, $to-color) {
+	background-color: $to-color;
+	background: -webkit-linear-gradient(top, $from-color 0%, $to-color 100%);
+	background: linear-gradient(to bottom, $from-color 0%, $to-color 100%);
+}
+
+@mixin rtl() {
+	[dir=rtl] & {
+		@content;
+	}
+}
+
+@function rc($value) {
+	@return $value / 1280 * 100%;
+}
+   // 26: @function rem-calc($values, $base: null) {
+   // 27    $rem-values: ();
+   // 28    $count: length($values);
+   // ..
+   // 59    // Pixel and unitless values are converted to rems
+   // 60    @if unit($value) == 'px' or unitless($value) {
+   // 61:     $value: rem-calc($value, $base: 16px);
+   // 62    }
+   // 63  
+   // ..
+   // 76    // Check if the value is a number
+   // 77    @if type-of($value) != 'number' {
+   // 78:     @warn inspect($value) + ' was passed to rem-calc(), which is not a number.';
+   // 79      @return $value;
+   // 80    }

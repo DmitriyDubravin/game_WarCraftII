@@ -1,0 +1,31 @@
+@import "libs/vars";
+@import "libs/mixins";
+
+@import "components/header";
+@import "components/footer";
+@import "../../node_modules/slick-carousel/slick/slick";
+
+
+
+body {
+	font-family: $main-ff;
+	color: $white;
+	background: $black;
+	transition: opacity 0.25s;
+	&.preloader {
+		opacity: 0;
+	}
+}
+
+a {
+	color: $brand;
+	text-decoration: none;
+	&:hover {
+		color: $brand-hover;
+	}
+}
+
+.content {
+	padding: 20px;
+}
+
