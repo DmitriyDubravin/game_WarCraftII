@@ -2,114 +2,71 @@ import PF from 'pathfinding';
 
 export default {
 	game() {
-		console.log('game');
 
+// game constants
+const cellSize = 64;
+const stepsPerCell = Math.floor(cellSize / 4);
+const fieldWidth = cellSize * Math.floor(window.innerWidth / cellSize);
+const fieldHeight = cellSize * Math.floor(window.innerHeight / cellSize);
+const cellsInWidth = fieldWidth / cellSize;
+const cellsInHeight = fieldHeight / cellSize;
+const totalCells = cellsInWidth * cellsInHeight;
 
-
-let canvas = document.getElementById('app');
-let ctx = canvas.getContext('2d');
-let image = document.getElementById('unit');
-let speed = 4;
-let cellSize = 64;
-let stepCellPosition = Math.floor(cellSize / 4);
-let target = {x: null, y: null};
-
-
-let fieldWidth = cellSize * Math.floor(window.innerWidth / cellSize);
-let fieldHeight = cellSize * Math.floor(window.innerHeight / cellSize);
+// canvas settings
+const canvas = document.getElementById('app');
+const ctx = canvas.getContext('2d');
 canvas.width = fieldWidth;
 canvas.height = fieldHeight;
 canvas.style.display = 'block';
 canvas.style.background = '#fafafa';
 
-class Field {
-	constructor() {
-		this.cellSize = 64;
-	}
-}
+
 
 class Unit {
 	constructor(x,y) {
 		this.x = x;
 		this.y = y;
 		this.speed = 4;
+		this.target = {x: null, y: null};
 		this.path = [];
 		this.nextPath = [];
 		this.pathIndex = 0;
 		this.currentDirection = 'b';
 		this.directionIndex = 0;
 		this.allDirections = {
-			t: {x: 0, y: -speed},
-			tr: {x: speed, y: -speed},
-			r: {x: speed, y: 0},
-			rb: {x: speed, y: speed},
-			b: {x: 0, y: speed},
-			bl: {x: -speed, y: speed},
-			l: {x: -speed, y: 0},
-			lt: {x: -speed, y: -speed},
+			t: {x: 0, y: -this.speed},
+			tr: {x: this.speed, y: -this.speed},
+			r: {x: this.speed, y: 0},
+			rb: {x: this.speed, y: this.speed},
+			b: {x: 0, y: this.speed},
+			bl: {x: -this.speed, y: this.speed},
+			l: {x: -this.speed, y: 0},
+			lt: {x: -this.speed, y: -this.speed},
 		};
 		this.idle = 0;
 	}
 }
 
-let unit = new Unit(0,0);
-let unit2 = new Unit(0,128);
-
-
-let cellsInWidth = fieldWidth / cellSize;
-let cellsInHeight = fieldHeight / cellSize;
-let amountOfCells = cellsInWidth * cellsInHeight;
-let field = [];
-for(let i = 0; i < amountOfCells; i++) {
-	let x = i < cellsInWidth ? i * cellSize : (i - (Math.floor(i / cellsInWidth) * cellsInWidth)) * cellSize;
-	let y = i < cellsInWidth ? 0 : Math.floor(i / cellsInWidth) * cellSize;
-	field.push({x: x, y: y, busy: false});
-}
-
-function createFieldMatrix(width, height) {
-	let fieldCoverage = [];
-	for(let i = 0; i < height; i++) {
-		let row = [];
-		for(let i = 0; i < width; i++) {
-			row.push(0);
-		}
-		fieldCoverage.push(row);
+class Knight extends Unit {
+	constructor(x,y) {
+		super(x,y);
+		this.image = document.getElementById('unit');
 	}
-	return fieldCoverage;
 }
 
-function fillFieldMatrix(arr) {
-	arr.forEach(function(item) {
-		let row = item[0];
-		let cell = item[1];
-		matrix[row][cell] = 1;
-	});
-}
-
-
-let matrix = createFieldMatrix(cellsInWidth, cellsInHeight);
-fillFieldMatrix([[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
-
-// console.log(matrix);
-// todo:
-// Lee algorithm
-// https://github.com/qiao/PathFinding.js/
+let unit = new Knight(0,0);
 
 
 
-// var unitPathX = (target.x + cellSize) / cellSize;
-// var unitPathY = (target.y + cellSize) / cellSize;
-// var pathTargetX = (target.x + cellSize) / cellSize;
-// var pathTargetY = (target.y + cellSize) / cellSize;
 
-// var path = finder.findPath(unitPathX, unitPathY, pathTargetX, pathTargetY, grid);
-// console.log(path);
+let fieldMatrix = this.createFieldMatrix(cellsInWidth, cellsInHeight);
 
+fieldMatrix = this.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
 
 
 
 function drawField() {
-	matrix.forEach(function(row, index) {
+	fieldMatrix.forEach(function(row, index) {
 		let y = index * cellSize - cellSize;
 		row.forEach(function(cell, i) {
 			if(cell !== 0) {
@@ -127,7 +84,7 @@ function clearField() {
 function drawTarget() {
 	if(isTargetSet()) {
 		ctx.fillStyle = '#f0f0f0';
-		ctx.fillRect(target.x, target.y, cellSize, cellSize);
+		ctx.fillRect(unit.target.x, unit.target.y, cellSize, cellSize);
 	}
 }
 
@@ -141,12 +98,12 @@ function drawUnit() {
 	if(unit.currentDirection === 'bl') {x = cellSize * 5;}
 	if(unit.currentDirection === 'l') {x = cellSize * 6;}
 	if(unit.currentDirection === 'lt') {x = cellSize * 7;}
-	let y = cellSize * Math.floor(unit.directionIndex / stepCellPosition);
-	ctx.drawImage(image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
+	let y = cellSize * Math.floor(unit.directionIndex / stepsPerCell);
+	ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
 }
 
 function setPath() {
-	if(target.x !== unit.x || target.y !== unit.y) {
+	if(unit.target.x !== unit.x || unit.target.y !== unit.y) {
 		let preX = unit.x;
 		let preY = unit.y;
 		if(unit.path.length !== 0) {
@@ -156,16 +113,16 @@ function setPath() {
 
 		let x = Math.floor(preX / cellSize) * cellSize;
 		let y = Math.floor(preY / cellSize) * cellSize;
-		let path = line(x, y, target.x, target.y, cellSize);
+		let path = line(x, y, unit.target.x, unit.target.y, cellSize);
 
-		var grid = new PF.Grid(matrix);
+		var grid = new PF.Grid(fieldMatrix);
 		var finder = new PF.AStarFinder({
 			allowDiagonal: true
 		});
 		var unitPathX = (unit.x + cellSize) / cellSize;
 		var unitPathY = (unit.y + cellSize) / cellSize;
-		var pathTargetX = (target.x + cellSize) / cellSize;
-		var pathTargetY = (target.y + cellSize) / cellSize;
+		var pathTargetX = (unit.target.x + cellSize) / cellSize;
+		var pathTargetY = (unit.target.y + cellSize) / cellSize;
 		
 		console.log(unitPathX, unitPathY, pathTargetX, pathTargetY);
 	
@@ -274,8 +231,8 @@ function move() {
 window.requestAnimationFrame(move);
 
 canvas.onmousedown = e => {
-	target.x = Math.floor((e.clientX - canvas.offsetLeft) / cellSize) * cellSize;
-	target.y = Math.floor((e.clientY - canvas.offsetTop) / cellSize) * cellSize;
+	unit.target.x = Math.floor((e.clientX - canvas.offsetLeft) / cellSize) * cellSize;
+	unit.target.y = Math.floor((e.clientY - canvas.offsetTop) / cellSize) * cellSize;
 	setPath();
 };
 
@@ -306,11 +263,11 @@ function line(x0, y0, x1, y1, step) {
 
 
 function resetTarget() {
-	target.x = target.y = null;
+	unit.target.x = unit.target.y = null;
 }
 
-const isTargetSet = () => target.x !== null && target.y !== null;
-const isTargetAchieved = () => target.x === unit.x && target.y === unit.y;
+const isTargetSet = () => unit.target.x !== null && unit.target.y !== null;
+const isTargetAchieved = () => unit.target.x === unit.x && unit.target.y === unit.y;
 
 
 
