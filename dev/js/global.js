@@ -57,16 +57,12 @@ class Knight extends Unit {
 let unit = new Knight(0,0);
 
 
-
-
 let fieldMatrix = this.createFieldMatrix(cellsInWidth, cellsInHeight);
-
-fieldMatrix = this.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
-
+let filledFieldMatrix = this.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
 
 
 function drawField() {
-	fieldMatrix.forEach(function(row, index) {
+	filledFieldMatrix.forEach(function(row, index) {
 		let y = index * cellSize - cellSize;
 		row.forEach(function(cell, i) {
 			if(cell !== 0) {
@@ -115,7 +111,7 @@ function setPath() {
 		let y = Math.floor(preY / cellSize) * cellSize;
 		let path = line(x, y, unit.target.x, unit.target.y, cellSize);
 
-		var grid = new PF.Grid(fieldMatrix);
+		var grid = new PF.Grid(filledFieldMatrix);
 		var finder = new PF.AStarFinder({
 			allowDiagonal: true
 		});

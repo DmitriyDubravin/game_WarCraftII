@@ -1,21 +1,23 @@
 export default {
 	createFieldMatrix(width, height) {
-		let fieldCoverage = [];
+		let matrix = [];
 		for(let i = 0; i < height; i++) {
 			let row = [];
 			for(let i = 0; i < width; i++) {
 				row.push(0);
 			}
-			fieldCoverage.push(row);
+			matrix.push(row);
 		}
-		return fieldCoverage;
+		return matrix;
 	},
-	fillFieldMatrix(matrix, arr) {
-		arr.forEach(function(item) {
-			let row = item[0];
-			let cell = item[1];
-			matrix[row][cell] = 1;
+	fillFieldMatrix(emptyMatrix, fillingArray) {
+		let matrix = [];
+		emptyMatrix.forEach((row, i) => {
+			matrix[i] = row.slice();
+		});
+		fillingArray.forEach(item => {
+			matrix[item[0]][item[1]] = 1;
 		});
 		return matrix;
 	}
-}
+};

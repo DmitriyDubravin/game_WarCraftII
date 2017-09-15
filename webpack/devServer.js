@@ -28,6 +28,6 @@ module.exports = dev
 	clientLogLevel: "none",
 	compress: true,
 	openPage: '',
-	noInfo: true
+	// noInfo: true
 }
 : null;
