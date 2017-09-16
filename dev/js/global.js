@@ -3,6 +3,8 @@ import PF from 'pathfinding';
 export default {
 	game() {
 
+
+
 // game constants
 const cellSize = 64;
 const stepsPerCell = Math.floor(cellSize / 4);
@@ -11,6 +13,8 @@ const fieldHeight = cellSize * Math.floor(window.innerHeight / cellSize);
 const cellsInWidth = fieldWidth / cellSize;
 const cellsInHeight = fieldHeight / cellSize;
 const totalCells = cellsInWidth * cellsInHeight;
+
+
 
 // canvas settings
 const canvas = document.getElementById('app');
@@ -44,6 +48,23 @@ class Unit {
 			lt: {x: -this.speed, y: -this.speed},
 		};
 		this.idle = 0;
+		// this.randomTurns = this.randomTurns.bind(this);
+
+	}
+	randomTurns() {
+		this.idle++;
+		if(this.idle > 400) {
+			let directionsArray = Object.keys(this.allDirections);
+			this.shuffleArray(directionsArray);
+			this.currentDirection = directionsArray[0];
+			this.idle = 0;
+		}
+	}
+	shuffleArray(a) {
+		for(let i = a.length; i; i--) {
+			let j = Math.floor(Math.random() * i);
+			[a[i - 1], a[j]] = [a[j], a[i - 1]];
+		}
 	}
 }
 
@@ -56,16 +77,14 @@ class Knight extends Unit {
 
 let unit = new Knight(0,0);
 
-
 let fieldMatrix = this.createFieldMatrix(cellsInWidth, cellsInHeight);
 let filledFieldMatrix = this.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
-
 
 function drawField() {
 	filledFieldMatrix.forEach(function(row, index) {
 		let y = index * cellSize - cellSize;
 		row.forEach(function(cell, i) {
-			if(cell !== 0) {
+			if(cell === 1) {
 				let x = i * cellSize - cellSize;
 				ctx.fillStyle = '#aaaaaa';
 				ctx.fillRect(x, y, cellSize, cellSize);
@@ -77,6 +96,7 @@ function drawField() {
 function clearField() {
 	ctx.clearRect(0, 0, fieldWidth, fieldHeight);
 }
+
 function drawTarget() {
 	if(isTargetSet()) {
 		ctx.fillStyle = '#f0f0f0';
@@ -98,7 +118,7 @@ function drawUnit() {
 	ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
 }
 
-function setPath() {
+const setPath = () => {
 	if(unit.target.x !== unit.x || unit.target.y !== unit.y) {
 		let preX = unit.x;
 		let preY = unit.y;
@@ -109,12 +129,10 @@ function setPath() {
 
 		let x = Math.floor(preX / cellSize) * cellSize;
 		let y = Math.floor(preY / cellSize) * cellSize;
-		let path = line(x, y, unit.target.x, unit.target.y, cellSize);
+		let path = this.findSimplePath(x, y, unit.target.x, unit.target.y, cellSize);
 
 		var grid = new PF.Grid(filledFieldMatrix);
-		var finder = new PF.AStarFinder({
-			allowDiagonal: true
-		});
+		var finder = new PF.AStarFinder({allowDiagonal: true});
 		var unitPathX = (unit.x + cellSize) / cellSize;
 		var unitPathY = (unit.y + cellSize) / cellSize;
 		var pathTargetX = (unit.target.x + cellSize) / cellSize;
@@ -135,19 +153,11 @@ function setPath() {
 		} else {
 			unit.path = smartPath;
 		}
-
-	
-
-
-
 		console.log('path was set');
-
-
 	} else {
 		console.log('same cell');
 	}
-
-}
+};
 
 function findNextDirection() {
 	if(unit.path.length > 1) {
@@ -191,22 +201,6 @@ function followThePath() {
 	}
 }
 
-function randomTurns() {
-	unit.idle++;
-	if(unit.idle * unit.speed > 600) {
-		let directionsArray = Object.keys(unit.allDirections);
-		shuffleArray(directionsArray);
-		unit.currentDirection = directionsArray[0];
-		unit.idle = 0;
-	}
-}
-
-function shuffleArray(a) {
-	for(let i = a.length; i; i--) {
-		let j = Math.floor(Math.random() * i);
-		[a[i - 1], a[j]] = [a[j], a[i - 1]];
-	}
-}
 
 function move() {
 	clearField();
@@ -216,7 +210,7 @@ function move() {
 	if(isTargetSet()) {
 		followThePath();
 	} else {
-		randomTurns();
+		unit.randomTurns();
 	}
 	if(isTargetAchieved()) {
 		resetTarget();
@@ -231,29 +225,6 @@ canvas.onmousedown = e => {
 	unit.target.y = Math.floor((e.clientY - canvas.offsetTop) / cellSize) * cellSize;
 	setPath();
 };
-
-function line(x0, y0, x1, y1, step) {
-	let lineArr = [];
-	let dx = Math.abs(x1-x0);
-	let dy = Math.abs(y1-y0);
-	let sx = (x0 < x1) ? step : -step;
-	let sy = (y0 < y1) ? step : -step;
-	let err = dx-dy;
-
-	while(true) {
-		lineArr.push({x: x0, y: y0});
-		// console.log(x0,y0);
-		if ((x0==x1) && (y0==y1)) break;
-		let e2 = 2*err;
-		if (e2 >-dy){ err -= dy; x0  += sx; }
-		if (e2 < dx){ err += dx; y0  += sy; }
-	}
-	return lineArr;
-}
-
-
-
-
 
 
 
