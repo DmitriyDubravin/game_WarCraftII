@@ -1,4 +1,5 @@
 import PF from 'pathfinding';
+import functions from './functions';
 
 export default {
 	game() {
@@ -26,6 +27,11 @@ canvas.style.background = '#fafafa';
 
 
 
+let fieldMatrix = functions.createFieldMatrix(cellsInWidth, cellsInHeight);
+let filledFieldMatrix = functions.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
+
+
+
 class Unit {
 	constructor(x,y) {
 		this.x = x;
@@ -48,22 +54,95 @@ class Unit {
 			lt: {x: -this.speed, y: -this.speed},
 		};
 		this.idle = 0;
-		// this.randomTurns = this.randomTurns.bind(this);
-
+	}
+	followThePath() {
+		if(this.path.length !== 0) {
+			if(this.directionIndex === 0) {
+				this.findNextDirection();
+			}
+			this.x += this.allDirections[this.currentDirection].x;
+			this.y += this.allDirections[this.currentDirection].y;
+			this.directionIndex += this.speed;
+			if(this.directionIndex >= cellSize) {
+				this.directionIndex = 0;
+				this.pathIndex += 1;
+				if(this.nextPath.length !== 0) {
+					this.path = this.nextPath;
+					this.nextPath = [];
+					this.pathIndex = 0;
+				}
+				if(this.pathIndex === this.path.length - 1) {
+					this.path = [];
+					this.nextPath = [];
+					this.pathIndex = 0;
+				}
+			}
+		}
+	}
+	findNextDirection() {
+		if(this.path.length > 1) {
+			let xDiff = this.path[this.pathIndex + 1].x - this.path[this.pathIndex].x;
+			let yDiff = this.path[this.pathIndex + 1].y - this.path[this.pathIndex].y;
+			if(xDiff === 0 && yDiff < 0) this.currentDirection = 't';
+			if(xDiff > 0 && yDiff < 0) this.currentDirection = 'tr';
+			if(xDiff > 0 && yDiff === 0) this.currentDirection = 'r';
+			if(xDiff > 0 && yDiff > 0) this.currentDirection = 'rb';
+			if(xDiff === 0 && yDiff > 0) this.currentDirection = 'b';
+			if(xDiff < 0 && yDiff > 0) this.currentDirection = 'bl';
+			if(xDiff < 0 && yDiff === 0) this.currentDirection = 'l';
+			if(xDiff < 0 && yDiff < 0) this.currentDirection = 'lt';
+		}
 	}
 	randomTurns() {
 		this.idle++;
 		if(this.idle > 400) {
 			let directionsArray = Object.keys(this.allDirections);
-			this.shuffleArray(directionsArray);
+			functions.shuffleArray(directionsArray);
 			this.currentDirection = directionsArray[0];
 			this.idle = 0;
 		}
 	}
-	shuffleArray(a) {
-		for(let i = a.length; i; i--) {
-			let j = Math.floor(Math.random() * i);
-			[a[i - 1], a[j]] = [a[j], a[i - 1]];
+	resetTarget() {
+		this.target.x = this.target.y = null;
+	}
+	isTargetSet() {
+		return this.target.x !== null && this.target.y !== null;
+	}
+	isTargetAchieved() {
+		return this.target.x === this.x && this.target.y === this.y;
+	}
+	setTarget(e) {
+		this.target.x = Math.floor((e.clientX - canvas.offsetLeft) / cellSize) * cellSize;
+		this.target.y = Math.floor((e.clientY - canvas.offsetTop) / cellSize) * cellSize;
+	}
+	setPath() {
+		if(this.target.x !== this.x || this.target.y !== this.y) {
+			let startX = this.x;
+			let startY = this.y;
+			if(this.path.length !== 0) {
+				startX = this.path[this.pathIndex + 1].x;
+				startY = this.path[this.pathIndex + 1].y;
+			}
+			let grid = new PF.Grid(filledFieldMatrix);
+			let finder = new PF.AStarFinder({allowDiagonal: true});
+			let unitPathX = (startX + cellSize) / cellSize;
+			let unitPathY = (startY + cellSize) / cellSize;
+			let pathTargetX = (this.target.x + cellSize) / cellSize;
+			let pathTargetY = (this.target.y + cellSize) / cellSize;
+			let path = finder.findPath(unitPathX, unitPathY, pathTargetX, pathTargetY, grid);
+			let smartPath = path.map(function(item) {
+				let nx = item[0] * cellSize - cellSize;
+				let ny = item[1] * cellSize - cellSize;
+				return {x: nx, y: ny};
+			});
+			if(this.path.length !== 0) {
+				this.nextPath = smartPath;
+			} else {
+				this.path = smartPath;
+			}
+			console.log('path was set');
+		} else {
+			console.log('same cell');
 		}
 	}
 }
@@ -75,10 +154,15 @@ class Knight extends Unit {
 	}
 }
 
-let unit = new Knight(0,0);
+let knight1 = new Knight(0,0);
+let knight2 = new Knight(256,0);
+let knight3 = new Knight(128,0);
 
-let fieldMatrix = this.createFieldMatrix(cellsInWidth, cellsInHeight);
-let filledFieldMatrix = this.fillFieldMatrix(fieldMatrix,[[3,3],[3,4],[3,5],[7,1],[7,2],[7,3]]);
+
+let allUnits = [knight1, knight2, knight3];
+
+
+
 
 function drawField() {
 	filledFieldMatrix.forEach(function(row, index) {
@@ -98,13 +182,13 @@ function clearField() {
 }
 
 function drawTarget() {
-	if(isTargetSet()) {
+	if(unit.isTargetSet()) {
 		ctx.fillStyle = '#f0f0f0';
 		ctx.fillRect(unit.target.x, unit.target.y, cellSize, cellSize);
 	}
 }
 
-function drawUnit() {
+function unitLook(unit) {
 	let x = 0;
 	if(unit.currentDirection === 't') {x = 0;}
 	if(unit.currentDirection === 'tr') {x = cellSize;}
@@ -115,129 +199,77 @@ function drawUnit() {
 	if(unit.currentDirection === 'l') {x = cellSize * 6;}
 	if(unit.currentDirection === 'lt') {x = cellSize * 7;}
 	let y = cellSize * Math.floor(unit.directionIndex / stepsPerCell);
-	ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
+	return [x,y];
 }
 
-const setPath = () => {
-	if(unit.target.x !== unit.x || unit.target.y !== unit.y) {
-		let preX = unit.x;
-		let preY = unit.y;
-		if(unit.path.length !== 0) {
-			preX = unit.path[unit.pathIndex + 1].x;
-			preY = unit.path[unit.pathIndex + 1].y;
-		}
+// function drawUnit() {
+// 	let look = unitLook();
+// 	let x = look[0];
+// 	let y = look[1];
+// 	ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
+// }
 
-		let x = Math.floor(preX / cellSize) * cellSize;
-		let y = Math.floor(preY / cellSize) * cellSize;
-		let path = this.findSimplePath(x, y, unit.target.x, unit.target.y, cellSize);
+function drawUnit(ctx, units) {
+	units.forEach(function(unit) {
+		let look = unitLook(unit);
+		let x = look[0];
+		let y = look[1];
+		ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
+	});
+}
 
-		var grid = new PF.Grid(filledFieldMatrix);
-		var finder = new PF.AStarFinder({allowDiagonal: true});
-		var unitPathX = (unit.x + cellSize) / cellSize;
-		var unitPathY = (unit.y + cellSize) / cellSize;
-		var pathTargetX = (unit.target.x + cellSize) / cellSize;
-		var pathTargetY = (unit.target.y + cellSize) / cellSize;
-		
-		console.log(unitPathX, unitPathY, pathTargetX, pathTargetY);
-	
-		var newPath = finder.findPath(unitPathX, unitPathY, pathTargetX, pathTargetY, grid);
-		console.log(newPath);
-		var smartPath = newPath.map(function(item) {
-			let nx = item[0] * 64 - 64;
-			let ny = item[1] * 64 - 64;
-			return {x: nx, y: ny};
-		});
 
-		if(unit.path.length !== 0) {
-			unit.nextPath = path;
+// function allFollowThePath(units) {
+// 	units.forEach(function(unit) {
+// 		unit.followThePath();
+// 	});
+// }
+// function allRandomTurns(units) {
+// 	units.forEach(function(unit) {
+// 		unit.randomTurns();
+// 	});
+// }
+
+function unitsMoves(units) {
+	units.forEach(function(unit) {
+		if(unit.isTargetSet()) {
+			unit.followThePath();
 		} else {
-			unit.path = smartPath;
+			unit.randomTurns();
 		}
-		console.log('path was set');
-	} else {
-		console.log('same cell');
-	}
-};
-
-function findNextDirection() {
-	if(unit.path.length > 1) {
-		let xDiff = unit.path[unit.pathIndex + 1].x - unit.path[unit.pathIndex].x;
-		let yDiff = unit.path[unit.pathIndex + 1].y - unit.path[unit.pathIndex].y;
-		if(xDiff === 0 && yDiff < 0) return 't';
-		if(xDiff > 0 && yDiff < 0) return 'tr';
-		if(xDiff > 0 && yDiff === 0) return 'r';
-		if(xDiff > 0 && yDiff > 0) return 'rb';
-		if(xDiff === 0 && yDiff > 0) return 'b';
-		if(xDiff < 0 && yDiff > 0) return 'bl';
-		if(xDiff < 0 && yDiff === 0) return 'l';
-		if(xDiff < 0 && yDiff < 0) return 'lt';
-	}
+		if(unit.isTargetAchieved()) {
+			unit.resetTarget();
+		}
+	});
 }
-
-function followThePath() {
-	if(unit.path.length !== 0) {
-		if(unit.directionIndex === 0) {
-			unit.currentDirection = findNextDirection();
-		}
-		unit.x += unit.allDirections[unit.currentDirection].x;
-		unit.y += unit.allDirections[unit.currentDirection].y;
-
-		unit.directionIndex += unit.speed;
-		if(unit.directionIndex >= cellSize) {
-			unit.directionIndex = 0;
-			unit.pathIndex += 1;
-			console.log('cell passed');
-			if(unit.nextPath.length !== 0) {
-				unit.path = unit.nextPath;
-				unit.nextPath = [];
-				unit.pathIndex = 0;
-			}
-			if(unit.pathIndex === unit.path.length - 1) {
-				unit.path = [];
-				unit.pathIndex = 0;
-				console.log('target achieved');
-			}
-		}
-	}
-}
-
 
 function move() {
 	clearField();
 	drawField();
-	drawTarget();
-	drawUnit();
-	if(isTargetSet()) {
-		followThePath();
-	} else {
-		unit.randomTurns();
-	}
-	if(isTargetAchieved()) {
-		resetTarget();
-	}
+	// drawTarget();
+	drawUnit(ctx, allUnits);
+	unitsMoves(allUnits);
 	window.requestAnimationFrame(move);
 }
 
 window.requestAnimationFrame(move);
 
-canvas.onmousedown = e => {
-	unit.target.x = Math.floor((e.clientX - canvas.offsetLeft) / cellSize) * cellSize;
-	unit.target.y = Math.floor((e.clientY - canvas.offsetTop) / cellSize) * cellSize;
-	setPath();
-};
-
-
-
-
-function resetTarget() {
-	unit.target.x = unit.target.y = null;
+function allSetPath(units) {
+	units.forEach(function(unit) {
+		unit.setPath();
+	});
+}
+function allSetTarget(e, units) {
+	units.forEach(function(unit) {
+		unit.setTarget(e);
+	});
 }
 
-const isTargetSet = () => unit.target.x !== null && unit.target.y !== null;
-const isTargetAchieved = () => unit.target.x === unit.x && unit.target.y === unit.y;
 
-
-
+canvas.onmousedown = e => {
+	allSetTarget(e,allUnits);
+	allSetPath(allUnits);
+};
 
 
 

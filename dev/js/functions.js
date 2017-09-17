@@ -38,11 +38,10 @@ export default {
 		return lineArr;
 	},
 	shuffleArray(array) {
-		let newArray = [];
 		for(let i = array.length; i; i--) {
 			let j = Math.floor(Math.random() * i);
-			[newArray[i - 1], newArray[j]] = [array[j], array[i - 1]];
+			[array[i - 1], array[j]] = [array[j], array[i - 1]];
 		}
-		return newArray;
+		return array.slice();
 	}
 };

@@ -22,8 +22,7 @@ let args = [
 	},
 	// modules to plug in
 	[
-		global,
-		functions
+		global
 	],
 	// run binder tests
 	// true
