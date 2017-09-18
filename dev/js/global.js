@@ -202,13 +202,6 @@ function unitLook(unit) {
 	return [x,y];
 }
 
-// function drawUnit() {
-// 	let look = unitLook();
-// 	let x = look[0];
-// 	let y = look[1];
-// 	ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
-// }
-
 function drawUnit(ctx, units) {
 	units.forEach(function(unit) {
 		let look = unitLook(unit);
@@ -217,18 +210,6 @@ function drawUnit(ctx, units) {
 		ctx.drawImage(unit.image, x, y, cellSize, cellSize, unit.x, unit.y, cellSize, cellSize);
 	});
 }
-
-
-// function allFollowThePath(units) {
-// 	units.forEach(function(unit) {
-// 		unit.followThePath();
-// 	});
-// }
-// function allRandomTurns(units) {
-// 	units.forEach(function(unit) {
-// 		unit.randomTurns();
-// 	});
-// }
 
 function unitsMoves(units) {
 	units.forEach(function(unit) {
