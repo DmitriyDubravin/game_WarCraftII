@@ -1,6 +1,12 @@
 import PF from 'pathfinding';
 import functions from './functions';
 
+
+import { clearField, sum } from './field';
+
+sum(1,2)
+
+
 export default {
 	game() {
 
@@ -177,9 +183,9 @@ function drawField() {
 	});
 }
 
-function clearField() {
-	ctx.clearRect(0, 0, fieldWidth, fieldHeight);
-}
+// function clearField() {
+// 	ctx.clearRect(0, 0, fieldWidth, fieldHeight);
+// }
 
 function drawTarget() {
 	if(unit.isTargetSet()) {
@@ -225,7 +231,7 @@ function unitsMoves(units) {
 }
 
 function move() {
-	clearField();
+	clearField(ctx, fieldWidth, fieldHeight);
 	drawField();
 	// drawTarget();
 	drawUnit(ctx, allUnits);

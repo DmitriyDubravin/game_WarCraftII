@@ -1,10 +1,6 @@
-require('../css/main.scss');
-
-import slick from 'slick-carousel';
 
 import binder from './binder';
 import global from './global';
-import functions from './functions';
 
 if(dev) {
 	if(module.hot) {
@@ -12,8 +8,6 @@ if(dev) {
 	}
 }
 
-// treeshaking test
-import {unusedFunction} from './helpers';
 
 let args = [
 	// elements to find & functions to execute if element was found
