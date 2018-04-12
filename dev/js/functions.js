@@ -12,14 +12,6 @@ export function createFieldMatrix(width, height) {
 }
 
 export function fillFieldMatrix(emptyMatrix, fillingArray) {
-    // let matrix = [];
-    // emptyMatrix.forEach((row, i) => {
-    // 	matrix[i] = row.slice();
-    // });
-    // fillingArray.forEach(item => {
-    // 	matrix[item[0]][item[1]] = 1;
-    // });
-    // return matrix;
     return emptyMatrix.map((row, rowI) => {
         return row.map((cell, cellI) => {
             return fillingArray.some(cords => rowI === cords[1] && cellI === cords[0]) ? 1 : 0;
@@ -97,6 +89,21 @@ export function reSelectUnits(units, clickedCoords) {
         return Object.assign(unit, {isSelected: isClickedOnUnit});
     });
 }
+
+export function reselectUnitsWithArea(units, unitSize, areaCoords) {
+    return units.map(unit => {
+        let unitCenterX = unit.occupiedCellX + unitSize / 2;
+        let unitCenterY = unit.occupiedCellY + unitSize / 2;
+        let isUnitInsideArea = (
+            unitCenterX >= areaCoords.startX &&
+            unitCenterX <= areaCoords.finishX &&
+            unitCenterY >= areaCoords.startY &&
+            unitCenterY <= areaCoords.finishY
+        );
+        return Object.assign(unit, {isSelected: isUnitInsideArea});
+    });
+}
+
 
 export function checkClickedMouseButton(buttonIndex) {
     switch (buttonIndex) {
