@@ -1,21 +1,14 @@
+
 import PF from 'pathfinding';
-
 import {
-
-    filledFieldMatrix,
-
-} from './constants';
-
-import {
-
     shuffleArray,
-
 } from './functions';
 
 
 
 export default class Unit {
     constructor(props) {
+        this.filledFieldMatrix = props.fieldMatrix;
         this.size = props.size;
         this.x = props.x;
         this.y = props.y;
@@ -123,7 +116,7 @@ export default class Unit {
                 startX = this.path[this.pathIndex + 1].x;
                 startY = this.path[this.pathIndex + 1].y;
             }
-            let grid = new PF.Grid(filledFieldMatrix);
+            let grid = new PF.Grid(this.filledFieldMatrix);
             let finder = new PF.AStarFinder({allowDiagonal: true});
 
 
@@ -180,4 +173,11 @@ export default class Unit {
             }
         }
     }
+    drawTarget(ctx) {
+        if (this.isTargetSet()) {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(this.target.x, this.target.y, this.size, this.size);
+        }
+    }
+
 }

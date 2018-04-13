@@ -83,26 +83,26 @@ export function getClickedCoords(e, areaSize) {
     return {x, y};
 }
 
-export function reSelectUnits(units, clickedCoords) {
-    return units.map(unit => {
-        let isClickedOnUnit = unit.occupiedCellX === clickedCoords.x && unit.occupiedCellY === clickedCoords.y;
-        return Object.assign(unit, {isSelected: isClickedOnUnit});
-    });
-}
+// export function reSelectUnits(units, clickedCoords) {
+//     return units.map(unit => {
+//         let isClickedOnUnit = unit.occupiedCellX === clickedCoords.x && unit.occupiedCellY === clickedCoords.y;
+//         return Object.assign(unit, {isSelected: isClickedOnUnit});
+//     });
+// }
 
-export function reselectUnitsWithArea(units, unitSize, areaCoords) {
-    return units.map(unit => {
-        let unitCenterX = unit.occupiedCellX + unitSize / 2;
-        let unitCenterY = unit.occupiedCellY + unitSize / 2;
-        let isUnitInsideArea = (
-            unitCenterX >= areaCoords.startX &&
-            unitCenterX <= areaCoords.finishX &&
-            unitCenterY >= areaCoords.startY &&
-            unitCenterY <= areaCoords.finishY
-        );
-        return Object.assign(unit, {isSelected: isUnitInsideArea});
-    });
-}
+// export function reselectUnitsWithArea(units, unitSize, areaCoords) {
+//     return units.map(unit => {
+//         let unitCenterX = unit.occupiedCellX + unitSize / 2;
+//         let unitCenterY = unit.occupiedCellY + unitSize / 2;
+//         let isUnitInsideArea = (
+//             unitCenterX >= areaCoords.startX &&
+//             unitCenterX <= areaCoords.finishX &&
+//             unitCenterY >= areaCoords.startY &&
+//             unitCenterY <= areaCoords.finishY
+//         );
+//         return Object.assign(unit, {isSelected: isUnitInsideArea});
+//     });
+// }
 
 
 export function checkClickedMouseButton(buttonIndex) {

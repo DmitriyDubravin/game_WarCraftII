@@ -1,33 +1,15 @@
 
+import Field from './field';
+import Units from './units';
 import Unit from './unit';
+
 import {
 
-    filterSelected,
     getClickedCoords,
-    reSelectUnits,
-    reselectUnitsWithArea,
     checkClickedMouseButton,
 
 } from './functions';
 
-import {
-
-    canvas,
-    ctx,
-    fieldWidth,
-    fieldHeight,
-    cellSize,
-    filledFieldMatrix,
-
-} from './constants';
-
-
-import {
-
-    clearField,
-    drawField,
-
-} from './field';
 
 
 
@@ -35,92 +17,49 @@ export default {
     game() {
 
 
+        const field = new Field();
 
-// game constants
+        class Knight extends Unit {
+            constructor(props) {
+                super(props);
+                this.image = document.getElementById('unit');
+            }
+        }
 
+        const knight1 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 0, y: 0});
+        const knight2 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 128, y: 0});
+        const knight3 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 256, y: 0});
 
+        const unitsArr = [
+            knight1,
+            knight2,
+            knight3,
+        ];
 
-
-
-
-// canvas settings
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class Knight extends Unit {
-    constructor(props) {
-        super(props);
-        this.image = document.getElementById('unit');
-    }
-}
-
-let knight1 = new Knight({size: cellSize, x: 0, y: 0});
-let knight2 = new Knight({size: cellSize, x: 128, y: 0});
-let knight3 = new Knight({size: cellSize, x: 256, y: 0});
-
-let allUnits = [
-    knight1,
-    knight2,
-    knight3,
-];
+        const units = new Units(field.ctx, field.cellSize, unitsArr);
 
 
 
 
 
-class UnitsGroup {
-    constructor(unitsArray) {
-        this.units = unitsArray;
-    }
-}
-
-let unitsAll = new UnitsGroup(allUnits);
-console.log(unitsAll);
 
 
-
-class Constants {
-    // ?
-}
-
-
-class Field {
-    // ?
-}
-
-
-
-
-
-let drag = false;
-let rect = {};
+let isDragging = false;
+let drawingRect = {};
 
 function init() {
-    canvas.addEventListener('mousedown', mouseDown, false);
-    canvas.addEventListener('mouseup', mouseUp, false);
-    canvas.addEventListener('mousemove', mouseMove, false);
+    field.canvas.addEventListener('mousedown', mouseDown, false);
+    field.canvas.addEventListener('mouseup', mouseUp, false);
+    field.canvas.addEventListener('mousemove', mouseMove, false);
 }
 
 function mouseDown(e) {
     let mouseButton = checkClickedMouseButton(e.button);
 
     if (mouseButton === 'left') {
-        rect.startX = e.pageX - this.offsetLeft;
-        rect.startY = e.pageY - this.offsetTop;
-        drag = true;
+        drawingRect.startX = e.pageX - this.offsetLeft;
+        drawingRect.startY = e.pageY - this.offsetTop;
+        isDragging = true;
     }
 }
 
@@ -128,89 +67,43 @@ function mouseUp(e) {
     let mouseButton = checkClickedMouseButton(e.button);
 
     if (mouseButton === 'left') {
+        const {startX, startY, finishX, finishY} = drawingRect;
+        const shiftX = Math.abs(finishX - startX);
+        const shiftY = Math.abs(finishY - startY);
+
         if (
             // clean click
-            rect.finishX !== undefined ||
+            finishX !== undefined ||
             // click with little moving
-            rect.finishX - rect.startX < 20 && rect.finishY - rect.startY < 20
+            shiftX < 20 && shiftY < 20
         ) {
-            allUnits = reselectUnitsWithArea(allUnits, cellSize, rect);
+            units.reSelectWithArea(drawingRect);
         }
-
-
-        drag = false;
+        isDragging = false;
     }
 
-
-
-
-    rect = {};
+    drawingRect = {};
 }
 
 function mouseMove(e) {
-    if (drag) {
-        rect.finishX = e.pageX - this.offsetLeft;
-        rect.finishY = e.pageY - this.offsetTop;
+    if (isDragging) {
+        drawingRect.finishX = e.pageX - this.offsetLeft;
+        drawingRect.finishY = e.pageY - this.offsetTop;
     }
 }
 init();
 
 
 
-
-
-// function drawTarget() {
-//     if (unit.isTargetSet()) {
-//         ctx.fillStyle = '#f0f0f0';
-//         ctx.fillRect(unit.target.x, unit.target.y, cellSize, cellSize);
-//     }
-// }
-
-
-
-
-
-
-
-function drawUnits(ctx, units) {
-    units.forEach(function(unit) {
-        unit.drawOutline(ctx, cellSize);
-        unit.drawUnit(ctx, cellSize);
-    });
-}
-function unitsMoves(units) {
-    units.forEach(function(unit) {
-        if (unit.isTargetSet()) {
-            unit.followThePath();
-        } else {
-            unit.randomTurns();
-        }
-        if (unit.isTargetAchieved()) {
-            unit.resetTarget();
-        }
-    });
-}
-function allSetPath(units) {
-    units.forEach(function(unit) {
-        unit.setPath();
-    });
-}
-function allSetTarget(e, units) {
-    units.forEach(function(unit) {
-        unit.setTarget(e);
-    });
-}
-
-
-
-
-
 function drawSelectedAreaRect() {
-    if (rect.finishX !== undefined) {
-        ctx.beginPath();
-        ctx.rect(rect.startX, rect.startY, rect.finishX - rect.startX, rect.finishY - rect.startY);
-        ctx.strokeStyle = "#fc0";
-        ctx.stroke();
+    if (drawingRect.finishX !== undefined) {
+        const {startX, startY, finishX, finishY} = drawingRect;
+        const width = finishX - startX;
+        const height = finishY - startY;
+        field.ctx.beginPath();
+        field.ctx.rect(startX, startY, width, height);
+        field.ctx.strokeStyle = "#fc0";
+        field.ctx.stroke();
     }
 }
 
@@ -220,43 +113,36 @@ document.oncontextmenu = function() {
     return false;
 };
 
-canvas.addEventListener('mousedown', function(e) {
+field.canvas.addEventListener('mousedown', function(e) {
 
     let mouseButton = checkClickedMouseButton(e.button);
 
     if (mouseButton === 'left') {
-        let clickedCoords = getClickedCoords(e, cellSize);
-        allUnits = reSelectUnits(allUnits, clickedCoords);
+        let clickedCoords = getClickedCoords(e, field.cellSize);
+        units.reSelect(clickedCoords);
     }
 
     if (mouseButton === 'right') {
-        let selectedUnits = filterSelected(allUnits);
-
-        if (selectedUnits.length !== 0) {
-            allSetTarget(e, selectedUnits);
-            allSetPath(selectedUnits);
-        }
+        units.setTarget(e);
+        units.setPathway();
     }
 
 });
 
 
 
+        function move() {
+            field.clear();
+            field.draw();
+            drawSelectedAreaRect();
 
+            units.draw();
+            units.move();
+            window.requestAnimationFrame(move);
+        }
 
+        window.requestAnimationFrame(move);
 
-function move() {
-    clearField(ctx, fieldWidth, fieldHeight);
-    drawField(ctx, filledFieldMatrix, cellSize);
-    drawSelectedAreaRect();
-
-    // drawTarget();
-    drawUnits(ctx, allUnits);
-    unitsMoves(allUnits);
-    window.requestAnimationFrame(move);
-}
-
-window.requestAnimationFrame(move);
 
 
 
