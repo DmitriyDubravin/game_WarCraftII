@@ -29,7 +29,7 @@ export default class Units {
     }
     setPathway() {
         this.units.forEach(unit => {
-            if (unit.isSelected) {
+            if (unit.isSelected && !unit.isTargetAchieved()) {
                 unit.setPath();
             }
         });

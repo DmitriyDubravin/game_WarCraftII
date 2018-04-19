@@ -101,51 +101,41 @@ export default class Unit {
     }
     setPath() {
 
-        /**
-         * во время входа в каждую ячейку проверять, не занята ли она на данный момент
-         * если занята, то перерасчитывать путь заново
-         * ограничивать количество попыток (100?)
-         */
-
-        let size = this.size;
-
-        if (this.target.x !== this.x || this.target.y !== this.y) {
-            let startX = this.x;
-            let startY = this.y;
-            if (this.path.length !== 0) {
-                startX = this.path[this.pathIndex + 1].x;
-                startY = this.path[this.pathIndex + 1].y;
-            }
-            let grid = new PF.Grid(this.filledFieldMatrix);
-            let finder = new PF.AStarFinder({allowDiagonal: true});
-
-
-
-            /// The mess starts here
-
-            let unitPathX = startX / size; /// maybe i should remove all these sizes ??? (1,2) better than (64,128)
-            let unitPathY = startY / size;
-            let pathTargetX = this.target.x / size;
-            let pathTargetY = this.target.y / size;
-            let path = finder.findPath(unitPathX, unitPathY, pathTargetX, pathTargetY, grid);
-
-            let smartPath = path.map(function(item) {
-                let nx = item[0] * size;
-                let ny = item[1] * size;
-                return {x: nx, y: ny};
-            });
-            if (this.path.length !== 0) {
-                this.nextPath = smartPath;
-            } else {
-                this.path = smartPath;
-            }
-            console.log('path was set');
-        } else {
-            console.log('same cell');
+        const isMoving = this.path.length !== 0;
+        
+        // start path where unit stands
+        let unitStartX = this.x;
+        let unitStartY = this.y;
+        if (isMoving) {
+            // if unit is moving, the nextPath start will be the next current path step
+            unitStartX = this.path[this.pathIndex + 1].x;
+            unitStartY = this.path[this.pathIndex + 1].y;
         }
+
+        // gather data for the path
+        const grid = new PF.Grid(this.filledFieldMatrix);
+        const finder = new PF.AStarFinder({allowDiagonal: true});
+        const pathStartX = unitStartX / this.size;
+        const pathStartY = unitStartY / this.size;
+        const pathFinishX = this.target.x / this.size;
+        const pathFinishY = this.target.y / this.size;
+        const gridPath = finder.findPath(pathStartX, pathStartY, pathFinishX, pathFinishY, grid);
+
+        const path = gridPath.map(item => {
+            const nx = item[0] * this.size;
+            const ny = item[1] * this.size;
+            return {x: nx, y: ny};
+        });
+        if (!isMoving) {
+            this.path = path;
+        } else {
+            this.nextPath = path;
+        }
+
     }
     followThePath() {
         let size = this.size;
+        // if path is set
         if (this.path.length !== 0) {
             if (this.directionIndex === 0) {
                 this.findNextDirection();
@@ -157,6 +147,7 @@ export default class Unit {
             this.occupiedCellY = Math.floor(this.y / size) * size;
 
             this.directionIndex += this.speed;
+
             if (this.directionIndex >= size) {
                 this.directionIndex = 0;
                 this.pathIndex += 1;
