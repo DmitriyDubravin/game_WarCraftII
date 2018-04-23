@@ -1,5 +1,5 @@
 
-export function createFieldMatrix(width, height) {
+export function createMatrix(width, height) {
     let matrix = [];
     for(let i = 0; i < height; i++) {
         let row = [];
@@ -11,8 +11,8 @@ export function createFieldMatrix(width, height) {
     return matrix;
 }
 
-export function fillFieldMatrix(emptyMatrix, fillingArray) {
-    return emptyMatrix.map((row, rowI) => {
+export function fillMatrix(currentMatrix, fillingArray) {
+    return currentMatrix.map((row, rowI) => {
         return row.map((cell, cellI) => {
             return fillingArray.some(cords => rowI === cords[1] && cellI === cords[0]) ? 1 : 0;
         });

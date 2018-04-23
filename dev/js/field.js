@@ -1,7 +1,7 @@
 
 import {
-    createFieldMatrix,
-    fillFieldMatrix,
+    createMatrix,
+    fillMatrix,
     argumentsTypesShouldBe
 } from './functions';
 
@@ -21,8 +21,8 @@ export default class Field {
         this.canvas.style.background = '#fafafa';
         this.cellsInWidth = this.fieldWidth / this.cellSize;
         this.cellsInHeight = this.fieldHeight / this.cellSize;
-        this.fieldMatrix = createFieldMatrix(this.cellsInWidth, this.cellsInHeight);
-        this.filledFieldMatrix = fillFieldMatrix(this.fieldMatrix,[[1,2],[2,2],[3,2],[3,4],[4,4],[5,4],[1,7],[2,7],[3,7]]);
+        this.fieldMatrix = createMatrix(this.cellsInWidth, this.cellsInHeight);
+        this.filledFieldMatrix = fillMatrix(this.fieldMatrix,[[2,0],[1,2],[2,2],[3,2],[3,4],[4,4],[5,4],[1,7],[2,7],[3,7]]);
 
     }
     draw() {

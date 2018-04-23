@@ -8,8 +8,14 @@ import {
 
 export default class Unit {
     constructor(props) {
+
+
+        // shouldn't it be static property
+        this.ctx = props.ctx;
         this.filledFieldMatrix = props.fieldMatrix;
         this.size = props.size;
+        this.directions = ['t', 'tr', 'r', 'rb', 'b', 'bl', 'l', 'lt'];
+
         this.x = props.x;
         this.y = props.y;
         this.speed = 4;
@@ -17,8 +23,9 @@ export default class Unit {
         this.path = [];
         this.nextPath = [];
         this.pathIndex = 0;
-        this.currentDirection = 'b';
-        this.directionIndex = 0;
+        this.stepsInCell = Math.floor(this.size / this.speed);
+        this.stepInCell = 0;
+        this.currentDirection = shuffleArray(this.directions)[0];
         this.allDirections = {
             t: {x: 0, y: -this.speed},
             tr: {x: this.speed, y: -this.speed},
@@ -35,73 +42,71 @@ export default class Unit {
         this.occupiedCellY = props.y;
     }
     findNextDirection() {
-        if (this.path.length > 1) {
-            let xDiff = this.path[this.pathIndex + 1].x - this.path[this.pathIndex].x;
-            let yDiff = this.path[this.pathIndex + 1].y - this.path[this.pathIndex].y;
-            if (xDiff === 0 && yDiff < 0) this.currentDirection = 't';
-            if (xDiff > 0 && yDiff < 0) this.currentDirection = 'tr';
-            if (xDiff > 0 && yDiff === 0) this.currentDirection = 'r';
-            if (xDiff > 0 && yDiff > 0) this.currentDirection = 'rb';
-            if (xDiff === 0 && yDiff > 0) this.currentDirection = 'b';
-            if (xDiff < 0 && yDiff > 0) this.currentDirection = 'bl';
-            if (xDiff < 0 && yDiff === 0) this.currentDirection = 'l';
-            if (xDiff < 0 && yDiff < 0) this.currentDirection = 'lt';
-        }
+        let xDiff = this.path[this.pathIndex + 1].x - this.path[this.pathIndex].x;
+        let yDiff = this.path[this.pathIndex + 1].y - this.path[this.pathIndex].y;
+        if (xDiff === 0 && yDiff < 0) return 't';
+        if (xDiff > 0 && yDiff < 0) return 'tr';
+        if (xDiff > 0 && yDiff === 0) return 'r';
+        if (xDiff > 0 && yDiff > 0) return 'rb';
+        if (xDiff === 0 && yDiff > 0) return 'b';
+        if (xDiff < 0 && yDiff > 0) return 'bl';
+        if (xDiff < 0 && yDiff === 0) return 'l';
+        if (xDiff < 0 && yDiff < 0) return 'lt';
     }
     randomTurns() {
         this.idle++;
         if (this.idle > 400) {
-            let directionsArray = Object.keys(this.allDirections);
-            shuffleArray(directionsArray);
-            this.currentDirection = directionsArray[0];
+            this.currentDirection = shuffleArray(this.directions)[0];
             this.idle = 0;
         }
     }
     resetTarget() {
         this.target.x = this.target.y = null;
     }
+    isUnitOnTarget() {
+        return this.target.x === this.x && this.target.y === this.y;
+    }
     isTargetSet() {
         return this.target.x !== null && this.target.y !== null;
     }
-    isTargetAchieved() {
-        return this.target.x === this.x && this.target.y === this.y;
+    isHasPath() {
+        return this.path.length !== 0;
     }
     setTarget(e) {
         let size = this.size;
         this.target.x = Math.floor(e.clientX / size) * size;
         this.target.y = Math.floor(e.clientY / size) * size;
     }
-    drawOutline(ctx, outlineSize) {
+    drawOutline() {
         if (this.isSelected) {
-            ctx.beginPath();
-            ctx.rect(this.x, this.y, outlineSize, outlineSize);
-            ctx.strokeStyle = "#fc0";
-            ctx.stroke();
+            this.ctx.beginPath();
+            this.ctx.rect(this.x, this.y, this.size, this.size);
+            this.ctx.strokeStyle = "#fc0";
+            this.ctx.stroke();
         }
     }
-    drawUnit(ctx, unitSize) {
+    drawUnit() {
         let look = this.unitLook();
-        let x = look[0];
-        let y = look[1];
-        ctx.drawImage(this.image, x, y, unitSize, unitSize, this.x, this.y, unitSize, unitSize);
+        this.ctx.drawImage(this.image, look.x, look.y, this.size, this.size, this.x, this.y, this.size, this.size);
     }
     unitLook() {
-        let size = this.size;
         let x = 0;
-        if (this.currentDirection === 't') {x = 0;}
-        if (this.currentDirection === 'tr') {x = size;}
-        if (this.currentDirection === 'r') {x = size * 2;}
-        if (this.currentDirection === 'rb') {x = size * 3;}
-        if (this.currentDirection === 'b') {x = size * 4;}
-        if (this.currentDirection === 'bl') {x = size * 5;}
-        if (this.currentDirection === 'l') {x = size * 6;}
-        if (this.currentDirection === 'lt') {x = size * 7;}
-        let y = size * Math.floor(this.directionIndex / Math.floor(size / 4));
-        return [x,y];
+        switch(this.currentDirection) {
+            case "t":  x = this.size * 0; break;
+            case "tr": x = this.size * 1; break;
+            case "r":  x = this.size * 2; break;
+            case "rb": x = this.size * 3; break;
+            case "b":  x = this.size * 4; break;
+            case "bl": x = this.size * 5; break;
+            case "l":  x = this.size * 6; break;
+            case "lt": x = this.size * 7; break;
+        }
+        let y = Math.floor(this.stepInCell * this.speed / this.stepsInCell) * this.size;
+        return {x, y};
     }
     setPath() {
 
-        const isMoving = this.path.length !== 0;
+        const isMoving = this.isHasPath();
         
         // start path where unit stands
         let unitStartX = this.x;
@@ -135,39 +140,55 @@ export default class Unit {
     }
     followThePath() {
         let size = this.size;
-        // if path is set
-        if (this.path.length !== 0) {
-            if (this.directionIndex === 0) {
-                this.findNextDirection();
-            }
-            this.x += this.allDirections[this.currentDirection].x;
-            this.y += this.allDirections[this.currentDirection].y;
 
+        // if finished current cell && still has path to go
+        if (this.stepInCell === 0 && this.isHasPath()) {
+            // find next direction
+            this.currentDirection = this.findNextDirection();
+        }
+
+        // move unit position by current direction shift
+        this.x += this.allDirections[this.currentDirection].x;
+        this.y += this.allDirections[this.currentDirection].y;
+
+        // increase step inside cell
+        this.stepInCell++;
+
+        // if current cell is passed
+        if (this.stepInCell >= this.stepsInCell) {
+
+            // reset step inside cell
+            this.stepInCell = 0;
+
+            // set occupied cell
             this.occupiedCellX = Math.floor(this.x / size) * size;
             this.occupiedCellY = Math.floor(this.y / size) * size;
 
-            this.directionIndex += this.speed;
+            // increase path index => going to the new cell
+            this.pathIndex++;
 
-            if (this.directionIndex >= size) {
-                this.directionIndex = 0;
-                this.pathIndex += 1;
-                if (this.nextPath.length !== 0) {
-                    this.path = this.nextPath;
-                    this.nextPath = [];
-                    this.pathIndex = 0;
-                }
-                if (this.pathIndex === this.path.length - 1) {
-                    this.path = [];
-                    this.nextPath = [];
-                    this.pathIndex = 0;
-                }
+            // if next path already set, switching to new path
+            if (this.nextPath.length !== 0) {
+                // next path became current path
+                this.path = this.nextPath;
+                // clean next path
+                this.nextPath = [];
+                // reset path index
+                this.pathIndex = 0;
+            }
+
+            // if path is ended, reset all path data
+            if (this.pathIndex === this.path.length - 1) {
+                this.path = [];
+                this.nextPath = [];
+                this.pathIndex = 0;
             }
         }
     }
-    drawTarget(ctx) {
+    drawTarget() {
         if (this.isTargetSet()) {
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(this.target.x, this.target.y, this.size, this.size);
+            this.ctx.fillStyle = '#f0f0f0';
+            this.ctx.fillRect(this.target.x, this.target.y, this.size, this.size);
         }
     }
 

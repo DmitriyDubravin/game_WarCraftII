@@ -1,4 +1,18 @@
 
+/**
+ * NOTES
+ * redraw sprite to unit size 60x60
+ */
+
+
+
+
+
+
+
+
+
+
 import Field from './field';
 import Units from './units';
 import Unit from './unit';
@@ -26,9 +40,9 @@ export default {
             }
         }
 
-        const knight1 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 0, y: 0});
-        const knight2 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 128, y: 0});
-        const knight3 = new Knight({size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 256, y: 0});
+        const knight1 = new Knight({ctx: field.ctx, size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 0, y: 0});
+        const knight2 = new Knight({ctx: field.ctx, size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 128, y: 0});
+        const knight3 = new Knight({ctx: field.ctx, size: field.cellSize, fieldMatrix: field.filledFieldMatrix, x: 256, y: 0});
 
         const unitsArr = [
             knight1,
@@ -133,6 +147,7 @@ field.canvas.addEventListener('mousedown', function(e) {
 
         function move() {
             field.clear();
+            // console.log(units.getOccupiedCells());
             field.draw();
             drawSelectedAreaRect();
 

@@ -11,25 +11,25 @@ export default class Units {
     draw() {
         this.units.forEach(unit => {
             // unit.drawTarget(this.ctx);
-            unit.drawOutline(this.ctx, this.cellSize);
-            unit.drawUnit(this.ctx, this.cellSize);
+            unit.drawOutline(this.ctx);
+            unit.drawUnit(this.ctx);
         });
     }
     move() {
         this.units.forEach(unit => {
-            if (unit.isTargetSet()) {
+            if (unit.isTargetSet() && unit.isHasPath()) {
                 unit.followThePath();
             } else {
                 unit.randomTurns();
             }
-            if (unit.isTargetAchieved()) {
+            if (unit.isUnitOnTarget()) {
                 unit.resetTarget();
             }
         });
     }
     setPathway() {
         this.units.forEach(unit => {
-            if (unit.isSelected && !unit.isTargetAchieved()) {
+            if (unit.isSelected && !unit.isUnitOnTarget()) {
                 unit.setPath();
             }
         });
@@ -58,6 +58,11 @@ export default class Units {
                 unitCenterY <= drawedCoords.finishY
             );
             return Object.assign(unit, {isSelected: isUnitInsideArea});
+        });
+    }
+    getOccupiedCells() {
+        return this.units.map(unit => {
+            return [unit.occupiedCellX / this.cellSize, unit.occupiedCellY / this.cellSize];
         });
     }
 }
