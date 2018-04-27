@@ -147,10 +147,11 @@ field.canvas.addEventListener('mousedown', function(e) {
 
         function move() {
             field.clear();
-            // console.log(units.getOccupiedCells());
+            field.fill(units.occupiedCells());
             field.draw();
             drawSelectedAreaRect();
 
+            units.updateEnvironment(field.filledFieldMatrix);
             units.draw();
             units.move();
             window.requestAnimationFrame(move);

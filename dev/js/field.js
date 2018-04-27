@@ -22,9 +22,14 @@ export default class Field {
         this.cellsInWidth = this.fieldWidth / this.cellSize;
         this.cellsInHeight = this.fieldHeight / this.cellSize;
         this.fieldMatrix = createMatrix(this.cellsInWidth, this.cellsInHeight);
-        this.filledFieldMatrix = fillMatrix(this.fieldMatrix,[[2,0],[1,2],[2,2],[3,2],[3,4],[4,4],[5,4],[1,7],[2,7],[3,7]]);
-
+        this.initialOccupiedCells = [[1,2],[2,2],[3,2],[3,4],[4,4],[5,4],[1,7],[2,7],[3,7]];
+        this.filledFieldMatrix = fillMatrix(this.fieldMatrix, this.initialOccupiedCells);
     }
+
+    fill(unitsPositions) {
+        this.filledFieldMatrix = fillMatrix(this.fieldMatrix, this.initialOccupiedCells.concat(unitsPositions));
+    }
+
     draw() {
         // argumentsTypesShouldBe(arguments, ['CanvasRenderingContext2D', 'Array', 'Number']);
         this.filledFieldMatrix.forEach((row, index) => {

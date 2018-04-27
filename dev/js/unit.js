@@ -41,6 +41,9 @@ export default class Unit {
         this.occupiedCellX = props.x;
         this.occupiedCellY = props.y;
     }
+    update(props) {
+        this.filledFieldMatrix = props.field;
+    }
     findNextDirection() {
         let xDiff = this.path[this.pathIndex + 1].x - this.path[this.pathIndex].x;
         let yDiff = this.path[this.pathIndex + 1].y - this.path[this.pathIndex].y;
@@ -105,7 +108,6 @@ export default class Unit {
         return {x, y};
     }
     setPath() {
-
         const isMoving = this.isHasPath();
         
         // start path where unit stands
@@ -138,7 +140,21 @@ export default class Unit {
         }
 
     }
+    isPathCompromised(currentPathIndex) {
+
+        return this.path.some((cellCoords, i) => {
+            if (i < currentPathIndex) {
+                return false;
+            } else {
+                let row = cellCoords.y / this.size;
+                let cell = cellCoords.x / this.size;
+                return this.filledFieldMatrix[row][cell] > 0;
+            }
+        });
+
+    }
     followThePath() {
+
         let size = this.size;
 
         // if finished current cell && still has path to go
@@ -156,7 +172,7 @@ export default class Unit {
 
         // if current cell is passed
         if (this.stepInCell >= this.stepsInCell) {
-
+            
             // reset step inside cell
             this.stepInCell = 0;
 
@@ -164,8 +180,17 @@ export default class Unit {
             this.occupiedCellX = Math.floor(this.x / size) * size;
             this.occupiedCellY = Math.floor(this.y / size) * size;
 
+
             // increase path index => going to the new cell
             this.pathIndex++;
+
+            if (this.isPathCompromised(this.pathIndex)) {
+                console.log(1111);
+                this.path = [];
+                this.nextPath = [];
+                this.pathIndex = 0;
+                this.setPath();
+            }
 
             // if next path already set, switching to new path
             if (this.nextPath.length !== 0) {

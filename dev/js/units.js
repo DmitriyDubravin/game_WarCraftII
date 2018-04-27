@@ -8,6 +8,11 @@ export default class Units {
         this.cellSize = cellSize;
     }
 
+    updateEnvironment(newFilledField) {
+        this.units.forEach(unit => {
+            unit.update({field: newFilledField});
+        });
+    }
     draw() {
         this.units.forEach(unit => {
             // unit.drawTarget(this.ctx);
@@ -60,9 +65,7 @@ export default class Units {
             return Object.assign(unit, {isSelected: isUnitInsideArea});
         });
     }
-    getOccupiedCells() {
-        return this.units.map(unit => {
-            return [unit.occupiedCellX / this.cellSize, unit.occupiedCellY / this.cellSize];
-        });
+    occupiedCells() {
+        return this.units.map(unit => [unit.occupiedCellX / this.cellSize, unit.occupiedCellY / this.cellSize]);
     }
 }
